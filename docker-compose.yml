@@ -1,0 +1,25 @@
+services:
+  valzzhost-ssh:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: valzzhost-ssh
+    restart: unless-stopped
+    environment:
+      ROOT_PASSWORD: ${ROOT_PASSWORD:?Set ROOT_PASSWORD in .env}
+      VALZZ_HOSTNAME: ${VALZZ_HOSTNAME:-valzzhost}
+      SSH_USERNAME: ${SSH_USERNAME:-}
+      SSH_PASSWORD: ${SSH_PASSWORD:-}
+      AUTHORIZED_KEYS: ${AUTHORIZED_KEYS:-}
+      SSH_USER_AUTHORIZED_KEYS: ${SSH_USER_AUTHORIZED_KEYS:-}
+      SSH_PASSWORD_AUTH: ${SSH_PASSWORD_AUTH:-true}
+      SSH_ROOT_LOGIN: ${SSH_ROOT_LOGIN:-yes}
+      SSH_SUDO_NOPASSWD: ${SSH_SUDO_NOPASSWD:-false}
+      NODE_OPTIONS: ${NODE_OPTIONS:-}
+    ports:
+      - "2222:22"
+    volumes:
+      - ssh-data:/data
+
+volumes:
+  ssh-data:

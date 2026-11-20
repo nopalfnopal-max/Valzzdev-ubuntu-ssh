@@ -1,0 +1,91 @@
+{
+  "name": "ValzzHost · Lightweight Ubuntu SSH",
+  "description": "Persistent Ubuntu 24.04 SSH container for Railway with Node.js 26 LTS, npm and PM2. Attach a Railway Volume at /data to retain workspace, PM2 state, npm global packages and SSH host keys across redeploys.",
+  "image": "https://img101.pixhost.cc/images/77/546441106_skyzopedia.jpg",
+  "readme": "# ValzzHost — Lightweight Ubuntu SSH for Railway\n\n![ValzzHost](https://img101.pixhost.cc/images/77/546441106_skyzopedia.jpg)\n\nUbuntu 24.04 SSH server with **Node.js 26 LTS** + **PM2**. For persistence, attach a Railway Volume at `/data`.\n\n## Deploy Steps\n1. Set **ROOT_PASSWORD** (required) in Variables\n2. Add **TCP Proxy** on port `22` (Settings → Networking)\n3. Redeploy, then connect:\n\n```bash\nssh root@<your-railway-domain> -p <port>\n```\n\n## Persistent storage\nAttach a Railway Volume to this service and set its mount path to `/data`. Without this, user files and PM2 state are ephemeral.\n\n## Variables\n- `ROOT_PASSWORD` (**required**) — root password\n- `VALZZ_HOSTNAME` (recommended) — custom Linux hostname\n- `SSH_USERNAME` + `SSH_PASSWORD` (optional) — secondary user with sudo (password required by default)\n- `AUTHORIZED_KEYS` (optional) — SSH public keys for root\n- `SSH_USER_AUTHORIZED_KEYS` (optional) — SSH public keys for the secondary user\n- `SSH_PASSWORD_AUTH` (optional, default `true`) — SSH password login switch\n- `SSH_ROOT_LOGIN` (optional, default `yes`) — root SSH login mode\n- `SSH_SUDO_NOPASSWD` (optional, default `false`) — passwordless sudo switch\n- `NODE_OPTIONS` (optional) — Node.js runtime options\n\n## Included\n- Node.js 26.x + npm\n- PM2 (global)\n- neofetch, git, htop, tmux, vim, nano\n\nSupport: https://t.me/Valzz_Multi_Platform_Dev\n\n© ValzzHost",
+  "services": [
+    {
+      "name": "valzzhost-ssh",
+      "source": {
+        "repo": "https://github.com/YOUR_GITHUB_USERNAME/valzz-ubuntu-ssh",
+        "branch": "main"
+      },
+      "build": {
+        "builder": "DOCKERFILE",
+        "dockerfilePath": "Dockerfile",
+        "buildContext": "."
+      },
+      "deploy": {
+        "restartPolicyType": "ON_FAILURE",
+        "restartPolicyMaxRetries": 10,
+        "sleepApplicationStop": true,
+        "multiRegion": false
+      },
+      "networking": {
+        "restricted": false
+      },
+      "variables": {
+        "ROOT_PASSWORD": {
+          "required": true,
+          "secret": true,
+          "description": "Strong root password. Update this Railway Variable (not only passwd inside the container) when changing it."
+        },
+        "VALZZ_HOSTNAME": {
+          "required": true,
+          "secret": false,
+          "description": "Required custom Linux hostname. Example: valzzhost. Letters, numbers, dots and hyphens only."
+        },
+        "SSH_USERNAME": {
+          "required": false,
+          "secret": false,
+          "description": "Optional secondary user. Must be set together with SSH_PASSWORD."
+        },
+        "SSH_PASSWORD": {
+          "required": false,
+          "secret": true,
+          "description": "Password for the optional secondary user. Set together with SSH_USERNAME."
+        },
+        "AUTHORIZED_KEYS": {
+          "required": false,
+          "secret": true,
+          "description": "SSH public key(s) for root key-based authentication."
+        },
+        "SSH_USER_AUTHORIZED_KEYS": {
+          "required": false,
+          "secret": true,
+          "description": "Optional public SSH key(s) for the secondary SSH user."
+        },
+        "SSH_PASSWORD_AUTH": {
+          "required": false,
+          "secret": false,
+          "description": "Enable or disable SSH password authentication. Defaults to true; set false after key login is verified."
+        },
+        "SSH_ROOT_LOGIN": {
+          "required": false,
+          "secret": false,
+          "description": "Root SSH login mode: yes, no, or prohibit-password. Defaults to yes."
+        },
+        "SSH_SUDO_NOPASSWD": {
+          "required": false,
+          "secret": false,
+          "description": "Set true to grant the secondary user passwordless sudo. Defaults to false."
+        },
+        "NODE_OPTIONS": {
+          "required": false,
+          "secret": false,
+          "description": "Optional Node.js runtime options such as --max-old-space-size=2048. Set according to actual RAM."
+        }
+      }
+    }
+  ],
+  "proxy": {
+    "application": "valzzhost-ssh",
+    "ports": [
+      {
+        "port": 22,
+        "protocol": "tcp",
+        "service": "valzzhost-ssh"
+      }
+    ]
+  }
+}
